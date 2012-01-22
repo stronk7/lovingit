@@ -14,46 +14,46 @@ for b in $(git branch|sed -e 's/\*//'); do
     echo "Processing ${b}"
     # skip some branches (master, MOODLE_xx_STABLE, wip)
     if [[ $b =~ master|MOODLE_.._STABLE ]]; then
-        echo "    skipping $b"
+        echo "    skipping ${b}"
         continue
     fi
     # detect, based on $b, the upstream branch to check against
     t="master"
-    if [[ $b =~ ^(MDL-[0-9]*)([-_].*([0-9][0-9]))?$ ]]; then
+    if [[ ${b} =~ ^(MDL-[0-9]*)([-_].*([0-9][0-9]))?$ ]]; then
         if [[ ${BASH_REMATCH[3]} ]]; then
             t="MOODLE_${BASH_REMATCH[3]}_STABLE"
         fi
         echo "    matches ${BASH_REMATCH[1]} and ${t}"
     else
-        echo "    skipping $b"
+        echo "    skipping ${b}"
         continue
     fi
 
     # if the branch has not commits, ignore it
-    c=$(git rev-list $b -n1)
-    o=$(git oldest-ancestor $b $t)
-    if [[ $c == $o ]]; then
-        echo "    ignoring, $b has not commits"
+    c=$(git rev-list ${b} -n1)
+    o=$(git oldest-ancestor ${b} ${t})
+    if [[ ${c} == ${o} ]]; then
+        echo "    ignoring, ${b} has not commits"
         continue
     fi
 
     # if the branch has been fully merged, can be deleted
-    m=$(git merge-base $b $t)
-    if [[ $c == $m ]]; then
-        echo "    merged, $b can be deleted"
-        td="${td} $b"
+    m=$(git merge-base ${b} ${t})
+    if [[ ${c} == ${m} ]]; then
+        echo "    merged, ${b} can be deleted"
+        td="${td} ${b}"
         continue
     fi
 
     # if the branch commits (by content) have been picked, can be deleted
-    p=$(git cherry $t $b | grep ^+ | wc -l)
-    if [[ $p -eq 0 ]]; then
-        echo "    picked, $b can be deleted"
-        td="${td} $b"
+    p=$(git cherry ${t} ${b} | grep ^+ | wc -l)
+    if [[ ${p} -eq 0 ]]; then
+        echo "    picked, ${b} can be deleted"
+        td="${td} ${b}"
         continue
     fi
 
-    echo "    unmodified, $b has changed still not merged/picked to $t"
+    echo "    unmodified, ${b} has changed still not merged/picked to ${t}"
 done
 
 # Let's iterate over all the deleteable branches
@@ -70,8 +70,8 @@ for d in ${td}; do
     fi
 done
 
-echo "Returning to $curbranch"
-git checkout $curbranch
+echo "Returning to ${curbranch}"
+git checkout ${curbranch}
 
 # And this is what we can execute
 if [[ ${o} == "" ]]; then

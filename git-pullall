@@ -1,19 +1,19 @@
 #!/bin/bash
 curbranch=$(git currentbranch)
 echo "Pulling updates into all local branches"
-echo "You are in $curbranch"
+echo "You are in ${curbranch}"
 
 for b in $(git branch|sed -e 's/\*//'); do
     # skip some branches (wip_, MDL-, TODO)
-    if [[ $b =~ wip_|MDL-|TODO ]]; then
-        echo "skipping $b"
+    if [[ ${b} =~ wip_|MDL-|TODO ]]; then
+        echo "skipping ${b}"
         continue
     fi
-    echo "checking out $b..."
-    git checkout $b
-    echo "pulling updates from $b..."
+    echo "checking out ${b}..."
+    git checkout ${b}
+    echo "pulling updates from ${b}..."
     git pull
 done
 
-echo "Returning to $curbranch"
-git checkout $curbranch
+echo "Returning to ${curbranch}"
+git checkout ${curbranch}
