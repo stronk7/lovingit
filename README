@@ -1,0 +1,33 @@
+Some useful git scripts to make easier some daily operations.
+
+Note that they are dependent of:
+
+- The naming schema used for moodle branches (MOODLE_XX_STABLE)
+- My naming schema used for feature branches (_21, _22...)
+
+But surely they can be easily hacked to suit your needs.
+
+To install them:
+
+- clone/download the repository.
+- add it to your $PATH.
+- create git aliases for them if you're really lazy or
+  you aren't using autocompletion.
+
+Then you'll be able to run:
+
+- git currentbranch (cb): returns the current branch.
+- git oldest-ancestor (oa): returns the oldest common ancestor
+      (branch point) of two given branches.
+- git pullall (pa): pulls all the upstream branches.
+- git mrproper (mp): detects all the feature branches already
+      merged/picked upstream, suggesting the git command
+      to execute in order to get rid of them.
+
+And that's all. Enjoy them!
+
+© various scripts, pages, examples out there I've used to build them.
+© 2012 and upwards, the code, Eloy Lafuente (stronk7).
+© 2012 and upwards, the "mrproper" name, David Mudrák.
+
+License: Whatever you need, being OSI. BSD New (3-Clause) by default.
