@@ -1,0 +1,2 @@
+#!/bin/bash
+git rev-list --boundary "${1:-master}"..."${2:-HEAD}" | grep ^- | tail -n1 | cut -c2-

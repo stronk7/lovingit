@@ -1,0 +1,81 @@
+#!/bin/bash
+curbranch=$(git currentbranch)
+echo "Cleaning all branches accepted upstream"
+echo "You are in $curbranch"
+
+# Remote, defaults to 'github'
+r=${1:-github}
+# Acummulate to-delete branches
+td=""
+
+git co master
+
+for b in $(git branch|sed -e 's/\*//'); do
+    echo "Processing ${b}"
+    # skip some branches (master, MOODLE_xx_STABLE, wip)
+    if [[ $b =~ master|MOODLE_.._STABLE ]]; then
+        echo "    skipping $b"
+        continue
+    fi
+    # detect, based on $b, the upstream branch to check against
+    t="master"
+    if [[ $b =~ ^(MDL-[0-9]*)([-_].*([0-9][0-9]))?$ ]]; then
+        if [[ ${BASH_REMATCH[3]} ]]; then
+            t="MOODLE_${BASH_REMATCH[3]}_STABLE"
+        fi
+        echo "    matches ${BASH_REMATCH[1]} and ${t}"
+    else
+        echo "    skipping $b"
+        continue
+    fi
+
+    # if the branch has not commits, ignore it
+    c=$(git rev-list $b -n1)
+    o=$(git oldest-ancestor $b $t)
+    if [[ $c == $o ]]; then
+        echo "    ignoring, $b has not commits"
+        continue
+    fi
+
+    # if the branch has been fully merged, can be deleted
+    m=$(git merge-base $b $t)
+    if [[ $c == $m ]]; then
+        echo "    merged, $b can be deleted"
+        td="${td} $b"
+        continue
+    fi
+
+    # if the branch commits (by content) have been picked, can be deleted
+    p=$(git cherry $t $b | grep ^+ | wc -l)
+    if [[ $p -eq 0 ]]; then
+        echo "    picked, $b can be deleted"
+        td="${td} $b"
+        continue
+    fi
+
+    echo "    unmodified, $b has changed still not merged/picked to $t"
+done
+
+# Let's iterate over all the deleteable branches
+o=""
+s=""
+for d in ${td}; do
+    # delete local branch
+    o="${o} ${s}git branch -D ${d}"
+    s="&& "
+    # delete remote branch if exists
+    e=$(git branch -r | grep ${r}/${d}$ | wc -l)
+    if [[ $e -eq 1 ]]; then
+        o="${o} ${s}git push ${r} :${d}"
+    fi
+done
+
+echo "Returning to $curbranch"
+git checkout $curbranch
+
+# And this is what we can execute
+if [[ ${o} == "" ]]; then
+    echo "mrproper says: Nothing to clean"
+else
+    echo "mrproper says: Execute: ${o}"
+fi
