@@ -53,7 +53,7 @@ for b in $(git branch|sed -e 's/\*//'); do
         continue
     fi
 
-    echo "    unmodified, ${b} has changed still not merged/picked to ${t}"
+    echo "    unmodified, ${b} has changes not merged/picked to ${t}"
 done
 
 # Let's iterate over all the deleteable branches
