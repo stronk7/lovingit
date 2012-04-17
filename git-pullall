@@ -1,18 +1,30 @@
 #!/bin/bash
+# Remote, defaults to 'origin'
+r=${1:-origin}
+
 curbranch=$(git currentbranch)
 echo "Pulling updates into all local branches"
+echo "Working against remote: ${r}"
 echo "You are in ${curbranch}"
+
+git fetch ${r}
 
 for b in $(git branch|sed -e 's/\*//'); do
     # skip some branches (wip_, MDL-, TODO)
-    if [[ ${b} =~ wip_|MDL-|TODO ]]; then
+    if [[ ${b} =~ wip_|MDL-|TODO|^ci$ ]]; then
         echo "skipping ${b}"
         continue
+    fi
+    # detect if remote branch exists
+    e=$(git branch -r | grep ${r}/${b}$ | wc -l)
+    if [[ $e -eq 0 ]]; then
+        echo "skipping ${b}. Missing in remote: ${r}"
+        continue;
     fi
     echo "checking out ${b}..."
     git checkout ${b}
     echo "pulling updates from ${b}..."
-    git pull
+    git pull --ff-only ${r} ${b}
 done
 
 echo "Returning to ${curbranch}"

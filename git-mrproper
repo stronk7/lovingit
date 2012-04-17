@@ -1,10 +1,12 @@
 #!/bin/bash
-curbranch=$(git currentbranch)
-echo "Cleaning all branches accepted upstream"
-echo "You are in $curbranch"
-
 # Remote, defaults to 'github'
 r=${1:-github}
+
+curbranch=$(git currentbranch)
+echo "Cleaning all branches accepted upstream"
+echo "Working against remote: ${r}"
+echo "You are in $curbranch"
+
 # Acummulate to-delete branches
 td=""
 
@@ -12,7 +14,7 @@ git co master
 
 for b in $(git branch|sed -e 's/\*//'); do
     echo "Processing ${b}"
-    # skip some branches (master, MOODLE_xx_STABLE, wip)
+    # skip some branches (master, MOODLE_xx_STABLE)
     if [[ $b =~ master|MOODLE_.._STABLE ]]; then
         echo "    skipping ${b}"
         continue
