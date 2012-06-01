@@ -1,2 +1,4 @@
 #!/bin/bash
-git rev-list --boundary "${1:-master}"..."${2:-HEAD}" | grep ^- | tail -n1 | cut -c2-
+diff <( git rev-list "${1:-master}" --reverse --topo-order ) \
+     <( git rev-list "${2:-HEAD}" --reverse --topo-order) \
+--unified=1 | sed -ne 's/^ //p' | head -1
