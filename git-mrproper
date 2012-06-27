@@ -10,7 +10,7 @@ echo "You are in $curbranch"
 # Acummulate to-delete branches
 td=""
 
-git co master
+git checkout master
 
 for b in $(git branch|sed -e 's/\*//'); do
     echo "Processing ${b}"
