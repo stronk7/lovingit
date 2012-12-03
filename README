@@ -29,8 +29,9 @@ Then you'll be able to run:
       are present in the git dir. See git-package-moodle-prefix
       for a working example prefix). Examples:
         - git package
-        - git package v2.2.3 tgz /tmp moodle
-        - git package MOODLE_22_STABLE /tmp moodle
+        - git package v2.2.3 --format=tgz --prefix=moodle
+        - git package MOODLE_22_STABLE --dir=/some/dir --prefix=moodle
+        - git package v2.1.0 -f tar -d /some/dir -p moodle
         - git package 53cd3c286e8ac0b368fa6becb113945f292891cc
 
 - git pullall: pulls all the upstream branches.

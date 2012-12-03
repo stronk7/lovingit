@@ -31,28 +31,63 @@ packagetype="unknown"
 
 ### Main code
 
+# Create defaults
+# Format, defaults to zip
+format="zip"
+# Path, defaults to /tmp
+path="/tmp"
+# Prefix, defaults to ""
+prefix=""
+
+# Process the args
+myargs=$(getopt -n $(basename ${0}) -u -a -l "format: dir: prefix:" -o "f:d:p:" -- "$@")
+if [ $? -ne 0 ]; then
+    show_usage && exit 1
+fi
+
+eval set -- "${myargs}"
+
+while true; do
+    case "${1}" in
+        -f|--format)
+            format=${2}
+            shift 2
+            ;;
+        -d|--dir)
+            path=${2}
+            shift 2
+            ;;
+        -p|--prefix)
+            prefix=${2}
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            show_usage && exit 1
+            ;;
+    esac
+done
+
+# Get the non-option parameters
+eval set -- "$@"
 # Commit, defaults to current HEAD
 commit=${1:-$(git currentcommit)}
-# Format, defaults to zip
-format=${2:-"zip"}
-# Path, defaults to /tmp
-path=${3:-"/tmp"}
-# Prefix, defaults to ""
-prefix=${4:-""}
 
 # Verify that format is valid
 if [[ "${format}" != "zip" ]] && [[ "${format}" != "tar" ]] && [[ "${format}" != "tgz" ]]; then
-    echo "Error: Incorrect format (${format}). Please use zip, tar or tgz."
-    exit 1
+    echo "$(basename ${0}): incorrect format (${format})" && show_usage && exit 1
 fi
 
 # Verify the path exists, and is writable
+path=$(readlink -f ${path})
 if [[ ! -d "${path}" ]]; then
-    echo "Error: Directory does no exist (${path})."
-    exit 1
+    echo "$(basename ${0}): directory does not exist (${path})" && show_usage && exit 1
 fi
 if [[ ! -w "${path}" ]]; then
-    echo "Error: Directory is not writeable (${path})."
+    echo "$(basename ${0}): directory is not writeable (${path})" && show_usage && exit 1
     exit 1
 fi
 

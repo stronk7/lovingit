@@ -128,3 +128,21 @@ function apply_prefix_excludes () {
         done
     done
 }
+
+function show_usage() {
+    cat << EOF
+
+Usage: $(basename ${0}) [commitid/tagname/branchname] options
+
+This script generates a package for the given commitid/tagname/branchname
+(optional, default to current HEAD).
+
+OPTIONS:
+   -f --format Format of the generated package, can be 'zip',
+               'tar', 'tgz'). Defaults to 'zip'
+   -d --dir    Directory where the package will be created.
+               Defaults to '/tmp'
+   -p --prefix Prefix to be used by the package. Enables using
+               'prefix.includes' and 'prefix.excludes'. Defaults to ''
+EOF
+}
