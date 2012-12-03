@@ -16,11 +16,25 @@ To install them:
 
 Then you'll be able to run:
 
-- git currentbranch (cb): returns the current branch.
-- git oldest-ancestor (oa): returns the oldest common ancestor
+- git currentbranch: returns the current branch.
+- git currentcommit: returns the current commit (in current branch).
+- git oldest-ancestor: returns the oldest common ancestor
       (branch point) of two given branches.
-- git pullall (pa): pulls all the upstream branches.
-- git mrproper (mp): detects all the feature branches already
+- git package: given a commit/tag/branch, one format
+      (zip, tar, tgz), one target directory and one prefix
+      generate one package containing that exact version
+      from any git repository. When a prefix is defined,
+      support for both including and excluding files is
+      enabled if prefix.included or prefix.excluded files
+      are present in the git dir. See git-package-moodle-prefix
+      for a working example prefix). Examples:
+        - git package
+        - git package v2.2.3 tgz /tmp moodle
+        - git package MOODLE_22_STABLE /tmp moodle
+        - git package 53cd3c286e8ac0b368fa6becb113945f292891cc
+
+- git pullall: pulls all the upstream branches.
+- git mrproper: detects all the feature branches already
       merged/picked upstream, suggesting the git command
       to execute in order to get rid of them.
 
@@ -29,5 +43,7 @@ And that's all. Enjoy them!
 © various scripts, pages, examples out there I've used to build them.
 © 2012 and upwards, the code, Eloy Lafuente (stronk7).
 © 2012 and upwards, the "mrproper" name, David Mudrák.
+
+20121203 - Added git-currentcommit and git-packagge
 
 License: Whatever you need, being OSI. BSD New (3-Clause) by default.

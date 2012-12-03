@@ -1,0 +1,130 @@
+#!/bin/bash
+
+# Some functions for git-moodle-package
+
+# Given a commit, return the "best" branch
+# to be used for generating a package for it.
+# That implies:
+#   - When one commit is in only one branch, use it.
+#   - When one commit is in multiple branches:
+#     - If master exists:
+#       - If the commit is the oldest branch point (common ancestor), pick the non-master one.
+#       - If the commit is not the oldest branch point (common ancestor), pick master.
+#     - If master does not exist, pick the most recent one.
+function package_best_branch() {
+    firstbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | head -n 1)
+    lastbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | tail -n 1)
+    # Commit in only one branch, return it
+    if [[ "${firstbranch}" == "${lastbranch}" ]]; then
+        echo ${firstbranch}
+        return 0
+    fi
+    # Commit in master + others, look if it's the common ancestor (usually vX.Y.0)
+    if [[ "${lastbranch}" == "master" ]]; then
+        oldestancestor=$(git oldest-ancestor ${firstbranch} ${lastbranch})
+        # It is oldestancestor, pick the non-master branch
+        if [[ ${oldestancestor} =~ ^${commit}.* ]]; then
+            echo ${firstbranch}
+            return 0
+        # Not the oldestancestor, pick master
+        else
+            echo master
+            return 0
+        fi
+    fi
+    # master does not exist, always return the most recent one
+    echo ${lastbranch}
+    return 0
+}
+
+# Get the name of the dated package
+function dated_package_name() {
+    commit=${1}
+    commitdate=${2}
+    format=${3}
+    prefix=${4}
+    # Prepare prefix if not empty
+    if [[ "${prefix}" != "" ]]; then
+        prefix="${prefix}_"
+    fi
+    # Look for the branch the commit belongs to
+    branch=$(package_best_branch $commit)
+    echo "${prefix}${branch}_${commitdate}.${format}"
+    return 0
+}
+
+# Get the name of the tagged package
+function tagged_package_name() {
+    commit=${1}
+    committag=${2}
+    format=${3}
+    prefix=${4}
+    # Prepare prefix if not empty
+    if [[ "${prefix}" != "" ]]; then
+        prefix="${prefix}_"
+    fi
+    # Look for the branch the commit belongs to
+    branch=$(package_best_branch $commit)
+    echo "${prefix}${branch}_${committag}.${format}"
+    return 0
+}
+
+# Include all the files in the specified prefix to
+# the package. Also perform basic templating support:
+#   - #GITHASH#: Hash of the package commit
+#   - #GITDESC#: results of git-describe
+# The files are added in the same path they are under prefix.includes
+# creating directories if necessary
+function apply_prefix_includes () {
+    commit=${1}
+    tempdir=${2}
+    prefix=${3}
+    # No support for includes without prefix
+    if [[ "${prefix}" == "" ]]; then
+        return 0;
+    fi
+    describe=$(git describe ${commit})
+    if [[ ! -d ${prefix}.includes ]]; then
+        echo "    - Includes file (${prefix}.includes) not found"
+        return 0
+    fi
+    for i in $(cd ${prefix}.includes && find . -type f)
+    do
+        echo "    - Processing ${i}"
+        cat ${prefix}.includes/${i} | \
+        sed "s/#GITHASH#/${commit}/g" | \
+        sed "s/#GITDESC#/${describe}/g" > \
+            ${tempdir}/${prefix}/${i}
+    done
+}
+
+# Exclude all the files in the specified prefix from
+# the package. Wildcards (*) are allowed.
+function apply_prefix_excludes () {
+    commit=${1}
+    tempdir=${2}
+    prefix=${3}
+    # No support for excludes without prefix
+    if [[ "${prefix}" == "" ]]; then
+        return 0;
+    fi
+    if [[ ! -f ${prefix}.excludes ]]; then
+        echo "    - Excludes file (${prefix}.excludes) not found"
+        return 0
+    fi
+    for i in $(cat ${prefix}.excludes)
+    do
+        echo "    - Processing ${i}"
+        # By default, look always wildchar prefixed
+        ii="*${i}"
+        # Unless a full path is specified
+        if [[ "${i:0:1}" == "/" ]]; then
+            ii=".${i}"
+        fi
+        for d in $(cd ${tempdir}/${prefix} && find . -wholename "${ii}")
+        do
+            echo "      - Deleting ${d}"
+            rm -fr ${tempdir}/${prefix}/${i}
+        done
+    done
+}

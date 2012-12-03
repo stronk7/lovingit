@@ -1,0 +1,120 @@
+#!/bin/bash
+
+# Given any commit/tag/branch, build the corresponding moodle package.
+# It differentiates, in order to decide the name of the packages, between:
+#   - Tagged packages: If the commit matches any tag.
+#       - name: moodle_branchname_date.zip/tgz
+#   - Dated packages: If the commit does not match any tag.
+#       - name: moodle_branchname_tag.zip/tgz
+# (with branchname being the git name of the branch, date in YYYMMDD
+# the commit date, and tag the name of the tag without the "v" prefix)
+#
+# Params:
+#   - $1: commit/tag hash or branch name. Defaults to HEAD on current branch.
+#   - $2: format: zip or tgz. Defaults to zip.
+#   - $3: path: full path to a writable directory. Defaults to /tmp
+#   - $4: prefix: the prefix to add to all the paths in the zip/tar file. Defaults to ""
+
+set -e # Exit on error
+#set -x # Debug execution
+
+# Calculate some variables
+mydir="$(cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+# Calculate own pid, for tmp storage
+mypid="$$"
+
+# Init some variables
+packagetype="unknown"
+
+# Add the functions
+. ${mydir}/git-package-funcs
+
+### Main code
+
+# Commit, defaults to current HEAD
+commit=${1:-$(git currentcommit)}
+# Format, defaults to zip
+format=${2:-"zip"}
+# Path, defaults to /tmp
+path=${3:-"/tmp"}
+# Prefix, defaults to ""
+prefix=${4:-""}
+
+# Verify that format is valid
+if [[ "${format}" != "zip" ]] && [[ "${format}" != "tar" ]] && [[ "${format}" != "tgz" ]]; then
+    echo "Error: Incorrect format (${format}). Please use zip, tar or tgz."
+    exit 1
+fi
+
+# Verify the path exists, and is writable
+if [[ ! -d "${path}" ]]; then
+    echo "Error: Directory does no exist (${path})."
+    exit 1
+fi
+if [[ ! -w "${path}" ]]; then
+    echo "Error: Directory is not writeable (${path})."
+    exit 1
+fi
+
+# Clean prefix (trim spaces and slashes)
+prefix=$(echo ${prefix} | sed 's/^[ /]*//g' | sed 's/[ /]*$//g')
+
+# Get the short hash, to compare with git describe results
+commit=$(git rev-parse --short ${commit})
+
+# Look if the commit exists
+describe=$(git describe ${commit})
+
+# If the output of describe matches the commit, then
+# it is a "date package", else a "tagged package"
+if [[ ${describe} =~ .*-g${commit} ]]; then
+    # Get the date of the commit
+    commitdate=$(git show -s --format="%ci" ${commit})
+    commitdate=$(date --date="${commitdate}" "+%Y%m%d")
+    # Let's calculate the dated package name
+    packagename=$(dated_package_name ${commit} ${commitdate} ${format} ${prefix})
+    packagetype="dated"
+else
+    committag=${describe}
+    # we need the commit the tag is pointing to
+    commit=$(git rev-list ${committag} | head -n 1)
+    # Get the short hash
+    commit=$(git rev-parse --short ${commit})
+    # Let's calculate the tagged package
+    packagename=$(tagged_package_name ${commit} ${committag} ${format} ${prefix})
+    packagetype="tagged"
+fi
+
+echo "Building the ${packagetype} package ${packagename} into ${path}"
+
+tempdir=${path}/git-package-${mypid}
+echo "  - Creating the temp dir ${tempdir}"
+mkdir ${tempdir}
+
+# Extract the tree index with prefix (if defined) to the temp directory
+if [[ "${prefix}" == "" ]]; then
+    git archive ${commit} --format=tar | tar -x -C ${tempdir}
+else
+    git archive ${commit} --format=tar --prefix=${prefix}/ | tar -x -C ${tempdir}
+fi
+
+# Apply all the prefix.includes
+echo "  - Applying ${prefix}.includes"
+apply_prefix_includes ${commit} ${tempdir} ${prefix}
+
+# Apply all the prefix.excludes
+echo "  - Applying ${prefix}.excludes"
+apply_prefix_excludes ${commit} ${tempdir} ${prefix}
+
+# Everything's ready, let's package
+echo "  - Creating the ${path}/${packagename} archive"
+if [[ "${format}" == "zip" ]]; then
+    output=$(cd ${tempdir} && zip -r ${path}/${packagename}.tmp .)
+elif [[ "${format}" == "tar" ]]; then
+    output=$(cd ${tempdir} && tar -cf ${path}/${packagename}.tmp .)
+elif [[ "${format}" == "tgz" ]]; then
+    output=$(cd ${tempdir} && tar -czf ${path}/${packagename}.tmp .)
+fi
+mv ${path}/${packagename}.tmp ${path}/${packagename}
+echo "  - Deleting the temp dir ${tempdir}"
+rm -fr ${tempdir}
