@@ -2,6 +2,9 @@
 
 # Some functions for git-moodle-package
 
+set -e # Exit on error
+#set -x # Debug execution
+
 # Given a commit, return the "best" branch
 # to be used for generating a package for it.
 # That implies:
@@ -138,11 +141,14 @@ This script generates a package for the given commitid/tagname/branchname
 (optional, default to current HEAD).
 
 OPTIONS:
-   -f --format Format of the generated package, can be 'zip',
-               'tar', 'tgz'). Defaults to 'zip'
-   -d --dir    Directory where the package will be created.
-               Defaults to '/tmp'
-   -p --prefix Prefix to be used by the package. Enables using
-               'prefix.includes' and 'prefix.excludes'. Defaults to ''
+   -d --dir      Directory where the package will be created.
+                 Defaults to '/tmp'
+   -f --format   Format of the generated package, can be 'zip',
+                 'tar', 'tgz'). Defaults to 'zip'
+   -m --manifest Generate a manifest for the package. Acepts one
+                 name to be used as manifest file. If not passed, the name
+                 defaults to packagename  + ".manifest"
+   -p --prefix   Prefix to be used by the package. Enables using
+                 'prefix.includes' and 'prefix.excludes'. Defaults to ''
 EOF
 }

@@ -22,6 +22,8 @@ set -e # Exit on error
 mydir="$(cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 # Calculate own pid, for tmp storage
 mypid="$$"
+# git-package version
+myversion="v0.9.1"
 
 # Init some variables
 packagetype="unknown"
@@ -38,9 +40,11 @@ format="zip"
 path="/tmp"
 # Prefix, defaults to ""
 prefix=""
+# Manifest, defaults to ""
+manifest=""
 
 # Process the args
-myargs=$(getopt -n $(basename ${0}) -u -a -l "format: dir: prefix:" -o "f:d:p:" -- "$@")
+myargs=$(getopt -n $(basename ${0}) -u -a -l "dir: format: manifest:: prefix:" -o "d:f:m::p:" -- "$@")
 if [ $? -ne 0 ]; then
     show_usage && exit 1
 fi
@@ -49,13 +53,21 @@ eval set -- "${myargs}"
 
 while true; do
     case "${1}" in
+        -d|--dir)
+            path=${2}
+            shift 2
+            ;;
         -f|--format)
             format=${2}
             shift 2
             ;;
-        -d|--dir)
-            path=${2}
-            shift 2
+        -m|--manifest)
+            manifest="1"
+            if [[ -n "${2}" ]] && [[ "${2}" != "--" ]]; then
+                manifest=${2}
+                shift 1
+            fi
+            shift 1
             ;;
         -p|--prefix)
             prefix=${2}
@@ -65,7 +77,8 @@ while true; do
             shift
             break
             ;;
-        *)
+         *)
+            echo "$(basename ${0}): unknown option ${1}"
             show_usage && exit 1
             ;;
     esac
@@ -103,7 +116,7 @@ describe=$(git describe ${commit})
 # If the output of describe matches the commit, then
 # it is a "date package", else a "tagged package"
 if [[ ${describe} =~ .*-g${commit} ]]; then
-    # Get the date of the commit
+    # Get the commit date
     commitdate=$(git show -s --format="%ci" ${commit})
     commitdate=$(date --date="${commitdate}" "+%Y%m%d")
     # Let's calculate the dated package name
@@ -115,6 +128,9 @@ else
     commit=$(git rev-list ${committag} | head -n 1)
     # Get the short hash
     commit=$(git rev-parse --short ${commit})
+    # Get the commit date
+    commitdate=$(git show -s --format="%ci" ${commit})
+    commitdate=$(date --date="${commitdate}" "+%Y%m%d")
     # Let's calculate the tagged package
     packagename=$(tagged_package_name ${commit} ${committag} ${format} ${prefix})
     packagetype="tagged"
@@ -150,6 +166,37 @@ elif [[ "${format}" == "tar" ]]; then
 elif [[ "${format}" == "tgz" ]]; then
     output=$(cd ${tempdir} && tar -czf ${path}/${packagename}.tmp .)
 fi
+
+# Generate the manifest file if requested
+if [[ -n "${manifest}" ]]; then
+    # If no manifest name was specified, use packagename.manifest
+    if [[ "${manifest}" == "1" ]]; then
+        manifest="${path}/${packagename}.manifest"
+    else
+        manifest="${path}/${manifest}"
+    fi
+    echo "  - Generating manifest ${manifest}"
+    # Get the branch associated with the package
+    branch=$(package_best_branch $commit)
+    echo "# manifest file for package ${packagename} (${commit})" > "${manifest}"
+    echo "# generated with git-package ${myversion} (https://github.com/stronk7/lovingit)" >> "${manifest}"
+    echo "file name: ${packagename}" >> "${manifest}"
+    echo "file date: $(date -r ${path}/${packagename}.tmp -R)" >> "${manifest}"
+    echo "package type: ${packagetype}" >> "${manifest}"
+    echo "package format: ${format}" >> "${manifest}"
+    echo "package prefix: ${prefix}" >> "${manifest}"
+    echo "git commit branch: ${branch}" >> "${manifest}"
+    echo "git commit hash: ${commit}" >> "${manifest}"
+    if [[ "${packagetype}" == "tagged" ]]; then
+        echo "git commit tag: ${committag}" >> "${manifest}"
+    fi
+    echo "git commit date: ${commitdate}" >> "${manifest}"
+    echo "git commit desc: ${describe}" >> "${manifest}"
+
+fi
+
+# Create the final package
 mv ${path}/${packagename}.tmp ${path}/${packagename}
+
 echo "  - Deleting the temp dir ${tempdir}"
 rm -fr ${tempdir}
