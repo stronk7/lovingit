@@ -84,6 +84,7 @@ function apply_prefix_includes () {
     prefix=${3}
     # No support for includes without prefix
     if [[ "${prefix}" == "" ]]; then
+        echo "    - No prefix to include files for"
         return 0;
     fi
     describe=$(git describe ${commit})
@@ -109,6 +110,7 @@ function apply_prefix_excludes () {
     prefix=${3}
     # No support for excludes without prefix
     if [[ "${prefix}" == "" ]]; then
+        echo "    - No prefix to exclude files for"
         return 0;
     fi
     if [[ ! -f ${prefix}.excludes ]]; then

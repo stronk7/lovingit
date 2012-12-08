@@ -117,8 +117,8 @@ describe=$(git describe ${commit})
 # it is a "date package", else a "tagged package"
 if [[ ${describe} =~ .*-g${commit} ]]; then
     # Get the commit date
-    commitdate=$(git show -s --format="%ci" ${commit})
-    commitdate=$(date --date="${commitdate}" "+%Y%m%d")
+    fullcommitdate=$(git show -s --format="%ci" ${commit})
+    commitdate=$(date --date="${fullcommitdate}" "+%Y%m%d")
     # Let's calculate the dated package name
     packagename=$(dated_package_name ${commit} ${commitdate} ${format} ${prefix})
     packagetype="dated"
@@ -129,8 +129,8 @@ else
     # Get the short hash
     commit=$(git rev-parse --short ${commit})
     # Get the commit date
-    commitdate=$(git show -s --format="%ci" ${commit})
-    commitdate=$(date --date="${commitdate}" "+%Y%m%d")
+    fullcommitdate=$(git show -s --format="%ci" ${commit})
+    commitdate=$(date --date="${fullcommitdate}" "+%Y%m%d")
     # Let's calculate the tagged package
     packagename=$(tagged_package_name ${commit} ${committag} ${format} ${prefix})
     packagetype="tagged"
@@ -167,6 +167,10 @@ elif [[ "${format}" == "tgz" ]]; then
     output=$(cd ${tempdir} && tar -czf ${path}/${packagename}.tmp .)
 fi
 
+# Create the final package with the last commit date
+mv ${path}/${packagename}.tmp "${path}/${packagename}"
+touch --date="${fullcommitdate}" "${path}/${packagename}"
+
 # Generate the manifest file if requested
 if [[ -n "${manifest}" ]]; then
     # If no manifest name was specified, use packagename.manifest
@@ -181,7 +185,7 @@ if [[ -n "${manifest}" ]]; then
     echo "# manifest file for package ${packagename} (${commit})" > "${manifest}"
     echo "# generated with git-package ${myversion} (https://github.com/stronk7/lovingit)" >> "${manifest}"
     echo "file name: ${packagename}" >> "${manifest}"
-    echo "file date: $(date -r ${path}/${packagename}.tmp -R)" >> "${manifest}"
+    echo "file date: $(date -r ${path}/${packagename} -R)" >> "${manifest}"
     echo "package type: ${packagetype}" >> "${manifest}"
     echo "package format: ${format}" >> "${manifest}"
     echo "package prefix: ${prefix}" >> "${manifest}"
@@ -190,13 +194,10 @@ if [[ -n "${manifest}" ]]; then
     if [[ "${packagetype}" == "tagged" ]]; then
         echo "git commit tag: ${committag}" >> "${manifest}"
     fi
-    echo "git commit date: ${commitdate}" >> "${manifest}"
+    echo "git commit date: ${fullcommitdate}" >> "${manifest}"
     echo "git commit desc: ${describe}" >> "${manifest}"
 
 fi
-
-# Create the final package
-mv ${path}/${packagename}.tmp ${path}/${packagename}
 
 echo "  - Deleting the temp dir ${tempdir}"
 rm -fr ${tempdir}
