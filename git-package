@@ -46,7 +46,7 @@ manifest=""
 # Process the args
 myargs=$(getopt -n $(basename ${0}) -u -a -l "dir: format: manifest:: prefix:" -o "d:f:m::p:" -- "$@")
 if [ $? -ne 0 ]; then
-    show_usage && exit 1
+    git_package_show_usage && exit 1
 fi
 
 eval set -- "${myargs}"
@@ -79,7 +79,7 @@ while true; do
             ;;
          *)
             echo "$(basename ${0}): unknown option ${1}"
-            show_usage && exit 1
+            git_package_show_usage && exit 1
             ;;
     esac
 done
@@ -91,16 +91,16 @@ commit=${1:-$(git currentcommit)}
 
 # Verify that format is valid
 if [[ "${format}" != "zip" ]] && [[ "${format}" != "tar" ]] && [[ "${format}" != "tgz" ]]; then
-    echo "$(basename ${0}): incorrect format (${format})" && show_usage && exit 1
+    echo "$(basename ${0}): incorrect format (${format})" && git_package_show_usage && exit 1
 fi
 
 # Verify the path exists, and is writable
 path=$(readlink -f ${path})
 if [[ ! -d "${path}" ]]; then
-    echo "$(basename ${0}): directory does not exist (${path})" && show_usage && exit 1
+    echo "$(basename ${0}): directory does not exist (${path})" && git_package_show_usage && exit 1
 fi
 if [[ ! -w "${path}" ]]; then
-    echo "$(basename ${0}): directory is not writeable (${path})" && show_usage && exit 1
+    echo "$(basename ${0}): directory is not writeable (${path})" && git_package_show_usage && exit 1
     exit 1
 fi
 
