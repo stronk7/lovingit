@@ -145,7 +145,7 @@ function execute_prefix_executes() {
         echo "    - No prefix to execute files for"
         return 0;
     fi
-    if [[ ! -f ${prefix}.excludes ]]; then
+    if [[ ! -f ${prefix}.executes ]]; then
         echo "    - Executes file (${prefix}.executes) not found"
         return 0
     fi
