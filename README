@@ -25,15 +25,17 @@ Then you'll be able to run:
       generate one package containing that exact version
       from any git repository. When a prefix is defined,
       support for both including and excluding files is
-      enabled if prefix.included or prefix.excluded files
-      are present in the git dir. See git-package-moodle-prefix
+      enabled if prefix.includes or prefix.excludes files
+      are present in the git dir. Also, you can use one
+      prefix.executes file to perform any other customization
+      before proceeding with packaging. See git-package-moodle-prefix
       for a working example prefix). Examples:
         - git package
         - git package v2.2.3 --format=tgz --prefix=moodle
         - git package MOODLE_22_STABLE --dir=/some/dir --prefix=moodle
         - git package v2.1.0 -f tar -d /some/dir -p moodle
         - git package 53cd3c286e8ac0b368fa6becb113945f292891cc
-        - git package v2.4.0-rc1 --branch MOODLE_24_STABLE (or --branch master, the default)
+        - git package v2.4.0-rc1 --branch MOODLE_24_STABLE
 
 - git pullall: pulls all the upstream branches.
 - git mrproper: detects all the feature branches already
@@ -47,6 +49,6 @@ And that's all. Enjoy them!
 © 2012 and upwards, the "mrproper" name, David Mudrák.
 
 20121203 - Added git-currentcommit and git-package
-20121220 - Added --branch support to git-package
+20121220 - Added --branch and prefix.excludes support to git-package
 
 License: Whatever you need, being OSI. BSD New (3-Clause) by default.

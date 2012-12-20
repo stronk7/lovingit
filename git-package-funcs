@@ -140,6 +140,19 @@ function apply_prefix_excludes () {
     done
 }
 
+function execute_prefix_executes() {
+    if [[ "${prefix}" == "" ]]; then
+        echo "    - No prefix to execute files for"
+        return 0;
+    fi
+    if [[ ! -f ${prefix}.excludes ]]; then
+        echo "    - Executes file (${prefix}.executes) not found"
+        return 0
+    fi
+    cmd= "./${prefix}.executes" "${1}" "${2}" "${3}" "${4}" "${5}" "${6}"
+    ${cmd}
+}
+
 function git_package_show_usage() {
     cat << EOF
 

@@ -165,11 +165,15 @@ fi
 
 # Apply all the prefix.includes
 echo "  - Applying ${prefix}.includes"
-apply_prefix_includes ${commit} ${tempdir} ${prefix}
+apply_prefix_includes "${commit}" "${tempdir}" "${prefix}"
 
 # Apply all the prefix.excludes
 echo "  - Applying ${prefix}.excludes"
-apply_prefix_excludes ${commit} ${tempdir} ${prefix}
+apply_prefix_excludes "${commit}" "${tempdir}" "${prefix}"
+
+# Execute the prefix.executes
+echo "  - Executing ${prefix}.executes"
+execute_prefix_executes "${commit}" "${tempdir}" "${packagetype}" "${format}" "${prefix}" "${branch}"
 
 # Everything's ready, let's package
 echo "  - Creating the ${path}/${packagename} archive"

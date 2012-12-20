@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# This script is invoked by git-package when the "moodle" prefix is specified.
+
+set -e # Exit on error
+#set -x # Debug execution
+
+# These variables are immediately available, pased from the packager.
+
+commit="${1}"
+tempdir="${2}"
+packagetype="${3}"
+format="${4}"
+prefix="${5}"
+branch="${6}"
+
+# Your code goes here, replace the following example lines
+echo "    - Generating a ${format} ${packagetype} package for commit: ${commit} into ${tempdir}"
+echo "      (prefix: ${prefix}, branch: ${branch})"
+
+# Return 0 (ok) or non-zero (error)
+exit 0
