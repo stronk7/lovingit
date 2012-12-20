@@ -33,6 +33,7 @@ Then you'll be able to run:
         - git package MOODLE_22_STABLE --dir=/some/dir --prefix=moodle
         - git package v2.1.0 -f tar -d /some/dir -p moodle
         - git package 53cd3c286e8ac0b368fa6becb113945f292891cc
+        - git package v2.4.0-rc1 --branch MOODLE_24_STABLE (or --branch master, the default)
 
 - git pullall: pulls all the upstream branches.
 - git mrproper: detects all the feature branches already
@@ -45,6 +46,7 @@ And that's all. Enjoy them!
 © 2012 and upwards, the code, Eloy Lafuente (stronk7).
 © 2012 and upwards, the "mrproper" name, David Mudrák.
 
-20121203 - Added git-currentcommit and git-packagge
+20121203 - Added git-currentcommit and git-package
+20121220 - Added --branch support to git-package
 
 License: Whatever you need, being OSI. BSD New (3-Clause) by default.

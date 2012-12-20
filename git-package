@@ -14,6 +14,7 @@
 #   - $2: format: zip or tgz. Defaults to zip.
 #   - $3: path: full path to a writable directory. Defaults to /tmp
 #   - $4: prefix: the prefix to add to all the paths in the zip/tar file. Defaults to ""
+#   - %5: branch: optional, branch name if known. Useful to avoid errors and being deterministic for some commits.
 
 set -e # Exit on error
 #set -x # Debug execution
@@ -42,9 +43,11 @@ path="/tmp"
 prefix=""
 # Manifest, defaults to ""
 manifest=""
+# Branch, defaults to ""
+branch=""
 
 # Process the args
-myargs=$(getopt -n $(basename ${0}) -u -a -l "dir: format: manifest:: prefix:" -o "d:f:m::p:" -- "$@")
+myargs=$(getopt -n $(basename ${0}) -u -a -l "dir: format: manifest:: prefix: branch:" -o "d:f:m::p:b:" -- "$@")
 if [ $? -ne 0 ]; then
     git_package_show_usage && exit 1
 fi
@@ -71,6 +74,10 @@ while true; do
             ;;
         -p|--prefix)
             prefix=${2}
+            shift 2
+            ;;
+        -b|--branch)
+            branch=${2}
             shift 2
             ;;
         --)
@@ -113,6 +120,13 @@ commit=$(git rev-parse --short ${commit})
 # Look if the commit exists
 describe=$(git describe ${commit})
 
+# Verify the commit belongs to the the passed branch
+if [[ -n ${branch} ]]; then
+    if [[ -z $(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | grep ${branch}) ]]; then
+        echo "$(basename ${0}): commit ${commit} does not belong to branch ${branch}" && git_package_show_usage && exit 1
+    fi
+fi
+
 # If the output of describe matches the commit, then
 # it is a "date package", else a "tagged package"
 if [[ ${describe} =~ .*-g${commit} ]]; then
@@ -120,7 +134,7 @@ if [[ ${describe} =~ .*-g${commit} ]]; then
     fullcommitdate=$(git show -s --format="%ci" ${commit})
     commitdate=$(date --date="${fullcommitdate}" "+%Y%m%d")
     # Let's calculate the dated package name
-    packagename=$(dated_package_name ${commit} ${commitdate} ${format} ${prefix})
+    packagename=$(dated_package_name "${commit}" "${commitdate}" "${format}" "${prefix}" "${branch}")
     packagetype="dated"
 else
     committag=${describe}
@@ -132,7 +146,7 @@ else
     fullcommitdate=$(git show -s --format="%ci" ${commit})
     commitdate=$(date --date="${fullcommitdate}" "+%Y%m%d")
     # Let's calculate the tagged package
-    packagename=$(tagged_package_name ${commit} ${committag} ${format} ${prefix})
+    packagename=$(tagged_package_name "${commit}" "${committag}" "${format}" "${prefix}" "${branch}")
     packagetype="tagged"
 fi
 

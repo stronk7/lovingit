@@ -46,12 +46,15 @@ function dated_package_name() {
     commitdate=${2}
     format=${3}
     prefix=${4}
+    branch=${5}
     # Prepare prefix if not empty
     if [[ "${prefix}" != "" ]]; then
         prefix="${prefix}_"
     fi
-    # Look for the branch the commit belongs to
-    branch=$(package_best_branch $commit)
+    # If needed, look for the branch the commit belongs to
+    if [[ "${branch}" == "" ]]; then
+        branch=$(package_best_branch $commit)
+    fi
     echo "${prefix}${branch}_${commitdate}.${format}"
     return 0
 }
@@ -62,12 +65,15 @@ function tagged_package_name() {
     committag=${2}
     format=${3}
     prefix=${4}
+    branch=${5}
     # Prepare prefix if not empty
     if [[ "${prefix}" != "" ]]; then
         prefix="${prefix}_"
     fi
-    # Look for the branch the commit belongs to
-    branch=$(package_best_branch $commit)
+    # If needed, look for the branch the commit belongs to
+    if [[ "${branch}" == "" ]]; then
+        branch=$(package_best_branch $commit)
+    fi
     echo "${prefix}${branch}_${committag}.${format}"
     return 0
 }
@@ -152,5 +158,8 @@ OPTIONS:
                  defaults to packagename  + ".manifest"
    -p --prefix   Prefix to be used by the package. Enables using
                  'prefix.includes' and 'prefix.excludes'. Defaults to ''
+   -b --branch   Optional to verify/determine/force the branch where the commit/tag
+                 where the package is going to be built. If not specified,
+                 then the "best" branch is calculated by guessing.
 EOF
 }
