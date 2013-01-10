@@ -17,7 +17,7 @@ To install them:
 Then you'll be able to run:
 
 - git currentbranch: returns the current branch.
-- git currentcommit: returns the current commit (in current branch).
+- git currentcommit: returns the current commit (in specified branch, default to current).
 - git oldest-ancestor: returns the oldest common ancestor
       (branch point) of two given branches.
 - git package: given a commit/tag/branch, one format

@@ -1,2 +1,2 @@
 #!/bin/bash
-git rev-parse HEAD
+git rev-parse "${1:-HEAD}"
