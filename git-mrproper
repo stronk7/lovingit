@@ -21,9 +21,9 @@ for b in $(git branch|sed -e 's/\*//'); do
     fi
     # detect, based on $b, the upstream branch to check against
     t="master"
-    if [[ ${b} =~ ^(MDL-[0-9]*)([-_].*([0-9][0-9]))?$ ]]; then
-        if [[ ${BASH_REMATCH[3]} ]]; then
-            t="MOODLE_${BASH_REMATCH[3]}_STABLE"
+    if [[ ${b} =~ ^((MDL|MDLSITE|CONTRIB|HQ)-[0-9]*)([-_].*([0-9][0-9]))?$ ]]; then
+        if [[ ${BASH_REMATCH[4]} ]]; then
+            t="MOODLE_${BASH_REMATCH[4]}_STABLE"
         fi
         echo "    matches ${BASH_REMATCH[1]} and ${t}"
     else
