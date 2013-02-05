@@ -1,4 +1,4 @@
 #!/bin/bash
 diff <( git rev-list "${1:-master}" --reverse --topo-order ) \
-     <( git rev-list "${2:-HEAD}" --reverse --topo-order) \
+     <( git rev-list "${2:-HEAD}^" --reverse --topo-order) \
 --unified=1 | sed -ne 's/^ //p' | head -1
