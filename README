@@ -40,7 +40,10 @@ Then you'll be able to run:
 - git pullall: pulls all the upstream branches.
 - git mrproper: detects all the feature branches already
       merged/picked upstream, suggesting the git command
-      to execute in order to get rid of them.
+      to execute in order to get rid of them. Note that
+      some ff merges can lead to undetected changes so
+      it only will be working 100% reliable if no ff merges
+      are performed.
 
 And that's all. Enjoy them!
 

@@ -33,7 +33,7 @@ for b in $(git branch|sed -e 's/\*//'); do
 
     # if the branch has not commits, ignore it
     c=$(git rev-list ${b} -n1)
-    o=$(git oldest-ancestor ${b} ${t})
+    o=$(git oldest-ancestor ${t} ${b})
     if [[ ${c} == ${o} ]]; then
         echo "    ignoring, ${b} has not commits"
         continue
