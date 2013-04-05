@@ -174,5 +174,7 @@ OPTIONS:
    -b --branch   Optional to verify/determine/force the branch where the commit/tag
                  where the package is going to be built. If not specified,
                  then the "best" branch is calculated by guessing.
+   -i --ignoretags Force the packager to ignore any git tag, leading always
+                 to dated packages.
 EOF
 }

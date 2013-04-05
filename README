@@ -36,6 +36,7 @@ Then you'll be able to run:
         - git package v2.1.0 -f tar -d /some/dir -p moodle
         - git package 53cd3c286e8ac0b368fa6becb113945f292891cc
         - git package v2.4.0-rc1 --branch MOODLE_24_STABLE
+        - git package v2.5-beta --ignoretags
 
 - git pullall: pulls all the upstream branches.
 - git mrproper: detects all the feature branches already
