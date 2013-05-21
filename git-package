@@ -176,11 +176,11 @@ execute_prefix_executes "${commit}" "${tempdir}" "${packagetype}" "${format}" "$
 # Everything's ready, let's package
 echo "  - Creating the ${path}/${packagename} archive"
 if [[ "${format}" == "zip" ]]; then
-    output=$(cd ${tempdir} && zip -r ${path}/${packagename}.tmp .)
+    output=$(cd ${tempdir} && zip -r ${path}/${packagename}.tmp *)
 elif [[ "${format}" == "tar" ]]; then
-    output=$(cd ${tempdir} && tar -cf ${path}/${packagename}.tmp .)
+    output=$(cd ${tempdir} && tar -cf ${path}/${packagename}.tmp *)
 elif [[ "${format}" == "tgz" ]]; then
-    output=$(cd ${tempdir} && tar -czf ${path}/${packagename}.tmp .)
+    output=$(cd ${tempdir} && tar -czf ${path}/${packagename}.tmp *)
 fi
 
 # Create the final package with the last commit date
