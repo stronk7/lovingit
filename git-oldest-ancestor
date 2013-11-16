@@ -1,4 +1,10 @@
 #!/bin/bash
-diff <( git rev-list "${1:-master}" --reverse --topo-order ) \
-     <( git rev-list "${2:-HEAD}" --reverse --topo-order) \
---unified=1 | sed -ne 's/^ //p' | head -1
+if [[ "$(git currentcommit "${1:-master}")" == "$(git currentcommit "${2:-HEAD}")" ]]; then
+    # If they are the same commit, they are the oldest common ancestor (branch point).
+    echo $(git currentcommit "${1:-master}")
+else
+    # Else the first line in the next diff is the oldest common ancestor.
+    diff <( git rev-list "${1:-master}" --reverse --topo-order ) \
+         <( git rev-list "${2:-HEAD}" --reverse --topo-order) \
+    --unified=1 | sed -ne 's/^ //p' | head -1
+fi
