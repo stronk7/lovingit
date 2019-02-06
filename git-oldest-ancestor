@@ -4,7 +4,7 @@ if [[ "$(git currentcommit "${1:-master}")" == "$(git currentcommit "${2:-HEAD}"
     echo $(git currentcommit "${1:-master}")
 else
     # Else the first line in the next diff is the oldest common ancestor.
-    diff <( git rev-list "${1:-master}" --reverse --topo-order ) \
-         <( git rev-list "${2:-HEAD}" --reverse --topo-order) \
+    diff <( git rev-list "${1:-master}" --reverse --topo-order --first-parent) \
+         <( git rev-list "${2:-HEAD}" --reverse --topo-order --first-parent) \
     --unified=1 | sed -ne 's/^ //p' | head -1
 fi
