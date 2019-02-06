@@ -45,6 +45,7 @@ Then you'll be able to run:
       some ff merges can lead to undetected changes so
       it only will be working 100% reliable if no ff merges
       are performed.
+- git resetall: resets all local branches to the status of upstream ones.
 
 And that's all. Enjoy them!
 
