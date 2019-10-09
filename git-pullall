@@ -29,7 +29,7 @@ for b in $(git branch|sed -e 's/\*//'); do
     echo "checking out ${b}..."
     git checkout ${b}
     echo "pulling updates from ${b}...(keeping local changes on top)"
-    git rebase -p ${r}/${b}
+    git rebase -r ${r}/${b}
 done
 
 echo "Returning to ${curbranch}"
