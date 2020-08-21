@@ -15,13 +15,13 @@ git checkout master
 for b in $(git branch|sed -e 's/\*//'); do
     echo "Processing ${b}"
     # skip some branches (master, MOODLE_xx_STABLE)
-    if [[ $b =~ master|MOODLE_.._STABLE ]]; then
+    if [[ $b =~ master|MOODLE_[[:digit:]]{2,3}_STABLE ]]; then
         echo "    skipping ${b}"
         continue
     fi
     # detect, based on $b, the upstream branch to check against
     t="master"
-    if [[ ${b} =~ ^((MDL|MDLSITE|CONTRIB|HQ)-[0-9]*)([-_].*([0-9][0-9]))?$ ]]; then
+    if [[ ${b} =~ ^((MDL|MDLSITE|CONTRIB|HQ)-[0-9]*)([-_]([[:digit:]]{2,3}))?$ ]]; then
         if [[ ${BASH_REMATCH[4]} ]]; then
             t="MOODLE_${BASH_REMATCH[4]}_STABLE"
         fi

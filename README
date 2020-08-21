@@ -2,8 +2,8 @@ Some useful git scripts to make easier some daily operations.
 
 Note that they are dependent of:
 
-- The naming schema used for moodle branches (MOODLE_XX_STABLE)
-- My naming schema used for feature branches (_21, _22...)
+- The naming schema used for moodle branches (MOODLE_XX[X]_STABLE)
+- My naming schema used for feature branches (_21, _22, _310...)
 
 But surely they can be easily hacked to suit your needs.
 
@@ -55,5 +55,6 @@ And that's all. Enjoy them!
 
 20121203 - Added git-currentcommit and git-package
 20121220 - Added --branch and prefix.excludes support to git-package
+20200820 - Added support to 3-digit branches
 
 License: Whatever you need, being OSI. BSD New (3-Clause) by default.
