@@ -1,0 +1,100 @@
+#/bin/bash
+
+first=${1:-HEAD^}
+last=${2:-HEAD}
+
+if ! $(git merge-base --is-ancestor ${first} ${last}); then
+    printf "Error: %s is not an ancestor of %s. Cannot compute the ovelapping factor.\n" "${first}" "${last}"
+    exit 1
+fi
+
+numcommits=0
+
+funcadd=0
+funcdel=0
+
+acccommitadd=0
+acccommitdel=0
+
+totalcommitadd=0
+totalcommitdel=0
+
+accovercommit=0
+accoverfactor=0
+
+function count_changes() {
+    funcadd=0
+    funcdel=0
+    if [ -n "${3}" ]; then
+        changes=$(git diff ${1} ${2} --shortstat)
+        insregexp='([0-9]+) insertion[s]?'
+        delregexp='([0-9]+) deletion[s]?'
+        [[ ${changes} =~ ${insregexp} ]]
+        funcadd=${BASH_REMATCH[1]:-0}
+        [[ ${changes} =~ ${delregexp} ]]
+        funcdel=${BASH_REMATCH[1]:-0}
+    else
+        # Slow, file by file, for future expansion.
+        changes=$(git diff ${1} ${2} --numstat)
+        while IFS= read -r change; do
+            add=$(echo ${change} | tr -s ' ' | cut -d' ' -f1)
+            del=$(echo ${change} | tr -s ' ' | cut -d' ' -f2)
+            if ! [[ "$add" =~ ^[0-9]+$ ]]; then
+                continue
+            fi
+            ((funcadd += add))
+            ((funcdel += del))
+        done <<< "${changes}"
+    fi
+}
+
+# Output headers.
+printf "                    Commit info                           |    Accum.   |    Total    |   Overlap\n"
+printf "   #                   Hash                    (+)   (-)  |  (+)   (-)  |  (+)   (-)  | (rel) (tot)\n"
+printf "==== ======================================== ===== ===== | ===== ===== | ===== ===== | ===== =====\n"
+
+# Loop over commits.
+for commit in $(git rev-list --reverse --first-parent ${first}^..${last}); do
+    ((numcommits += 1))
+
+    # Commit changes.
+    count_changes ${commit}^ ${commit} "quick, please"
+    commitadd=${funcadd}
+    commitdel=${funcdel}
+
+    # Accumulated changes.
+    ((acccommitadd += commitadd))
+    ((acccommitdel += commitdel))
+
+    # Total changes
+    count_changes ${first}^ ${commit} "quick, please"
+    totalcommitadd=${funcadd}
+    totalcommitdel=${funcdel}
+
+    # Overlapping factor (lines and commits)
+    overfactor=$((acccommitadd - totalcommitadd))
+    reloverfactor=$((overfactor - accoverfactor))
+    accoverfactor=$overfactor
+    if [[ ${reloverfactor} -gt 0 ]]; then
+        ((accovercommit += 1))
+    fi
+
+    # Output
+    printf "% 4d %40s" ${numcommits} ${commit}
+    printf " % 5d % 5d" +${commitadd} ${commitdel}
+    printf " | % 5d % 5d" +${acccommitadd} ${acccommitdel}
+    printf " | % 5d % 5d" +${totalcommitadd} ${totalcommitdel}
+    printf " | % 5d % 5d\n" ${reloverfactor} ${accoverfactor}
+done
+
+# Final calculations.
+printf "\n"
+commitspercentage=$(echo "${accovercommit} * 100 / ${numcommits}" | bc -l)
+linespercentage=$(echo "${accoverfactor} * 100 / (${totalcommitadd} + ${totalcommitdel})" | bc -l)
+((totalcommit = totalcommitadd + totalcommitdel))
+finalfactor=$(echo "${commitspercentage} * ${linespercentage}" | bc -l)
+printf "Summary:\n"
+printf "  - by commits %.3f%% (%d/%d) have overlapping\n" "${commitspercentage}" "${accovercommit}" "${numcommits}"
+printf "  - by lines %.3f%% (%d/%d) are overlapping\n" "${linespercentage}" "${accoverfactor}" "${totalcommit}"
+printf "\n"
+printf "OVERLAPPING FACTOR (weighted, product of the 2 above): %.3f\n" "${finalfactor}"
