@@ -54,7 +54,7 @@ printf "   #                   Hash                    (+)   (-)  |  (+)   (-)  
 printf "==== ======================================== ===== ===== | ===== ===== | ===== ===== | ===== =====\n"
 
 # Loop over commits.
-for commit in $(git rev-list --reverse --first-parent ${first}^..${last}); do
+for commit in $(git rev-list --reverse --first-parent ${first}..${last}); do
     ((numcommits += 1))
 
     # Commit changes.
@@ -67,7 +67,7 @@ for commit in $(git rev-list --reverse --first-parent ${first}^..${last}); do
     ((acccommitdel += commitdel))
 
     # Total changes
-    count_changes ${first}^ ${commit} "quick, please"
+    count_changes ${first} ${commit} "quick, please"
     totalcommitadd=${funcadd}
     totalcommitdel=${funcdel}
 
@@ -92,7 +92,7 @@ printf "\n"
 commitspercentage=$(echo "${accovercommit} * 100 / ${numcommits}" | bc -l)
 linespercentage=$(echo "${accoverfactor} * 100 / (${totalcommitadd} + ${totalcommitdel})" | bc -l)
 ((totalcommit = totalcommitadd + totalcommitdel))
-finalfactor=$(echo "${commitspercentage} * ${linespercentage}" | bc -l)
+finalfactor=$(echo "${commitspercentage} * ${linespercentage} / 100" | bc -l)
 printf "Summary:\n"
 printf "  - by commits %.3f%% (%d/%d) have overlapping\n" "${commitspercentage}" "${accovercommit}" "${numcommits}"
 printf "  - by lines %.3f%% (%d/%d) are overlapping\n" "${linespercentage}" "${accoverfactor}" "${totalcommit}"
