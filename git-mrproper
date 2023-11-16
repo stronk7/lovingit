@@ -1,8 +1,8 @@
 #!/bin/bash
 # Remote, defaults to 'github'
 r=${1:-github}
-# Main branch, defaults to 'master'
-mainbranch=${2:-master}
+# Main branch, defaults to 'main'
+mainbranch=${2:-main}
 
 curbranch=$(git currentbranch)
 echo "Cleaning all branches accepted upstream"

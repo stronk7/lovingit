@@ -15,8 +15,8 @@ set -e # Exit on error
 #       - If the commit is not the oldest branch point (common ancestor), pick mainbranch.
 #     - If mainbranch does not exist, pick the most recent one.
 function package_best_branch() {
-    # Main branch, defaults to 'master'
-    mainbranch=master
+    # Main branch, defaults to 'main'
+    mainbranch=main
 
     firstbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | head -n 1)
     lastbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | tail -n 1)
