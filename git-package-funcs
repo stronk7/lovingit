@@ -18,8 +18,11 @@ function package_best_branch() {
     # Main branch, defaults to 'main'
     mainbranch=main
 
-    firstbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | head -n 1)
-    lastbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | tail -n 1)
+    # Branches regexp to ignore (usually master if main is being used by default)
+    ignorebranches='^(master|ignorablebranch|otherignorablebranch)$'
+
+    firstbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | grep -Pv ${ignorebranches} | head -n 1)
+    lastbranch=$(git branch --contains ${commit} | sed 's/[* ]* \(.*\)/\1/' | grep -Pv ${ignorebranches} | tail -n 1)
     # Commit in only one branch, return it
     if [[ "${firstbranch}" == "${lastbranch}" ]]; then
         echo ${firstbranch}
