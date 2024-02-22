@@ -16,6 +16,9 @@ But surely they can be easily hacked to suit your needs.
 
 #### Available scripts
 
+##### `git cabra`
+Returns all the authors (in `Co-authored by:` format) for the commits present in a branch since it was created from another, base one. Useful when going to squash lots of commits and, still, want to add that information in the final commit. 
+
 ##### `git currentbranch`
 Returns the current branch.
 
@@ -74,5 +77,6 @@ Resets all local branches to the status of upstream ones.
 20121220 - Added --branch and prefix.excludes support to git-package.    
 20200820 - Added support to 3-digit branches.    
 20201115 - Added new git overlapping utility.    
+20240217 - Added new git cabra (co-authors in a branch) utility.    
 
 License: Whatever you need, being OSI. BSD New (3-Clause) by default.

@@ -1,0 +1,15 @@
+#!/bin/bash
+if [[ "$(git currentcommit "${1:-HEAD}")" == "$(git currentcommit "${2:-main}")" ]]; then
+    # If they are the same commit, they are the oldest common ancestor (branch point).
+    echo "These branches are the same at $(git currentcommit "${1:-main}")"
+    exit 1
+fi
+
+ancestor="$(git oldest-ancestor "${1}" "${2}")"
+if [[ -z "${ancestor}" ]]; then
+    echo "These branches have no common ancestor"
+    exit 1
+fi
+
+echo "Calculating all the Co-authors in ${1} since it was created from ${2} (${ancestor})..."
+git log "${ancestor}"..."${1}" --format="Co-authored by: %an <%ae>" | sort -f | uniq
