@@ -150,9 +150,8 @@ fi
 
 echo "Building the ${packagetype} package ${packagename} into ${path}"
 
-tempdir=${path}/git-package-${mypid}
+tempdir=`mktemp -d`
 echo "  - Creating the temp dir ${tempdir}"
-mkdir ${tempdir}
 
 # Extract the tree index with prefix (if defined) to the temp directory
 if [[ "${prefix}" == "" ]]; then
